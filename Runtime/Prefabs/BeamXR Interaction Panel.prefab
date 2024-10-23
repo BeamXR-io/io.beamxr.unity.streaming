@@ -847,7 +847,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &1272324749155879504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -870,9 +870,6 @@ MonoBehaviour:
   _positiveButton: {fileID: 734325407200586750}
   _negativeButton: {fileID: 6021790081643949341}
   _buttonContainer: {fileID: 7139846798248123306}
-  _allowPhysicalButtonsAndTriggers: 1
-  _positiveButtonKeyCode: 330
-  _negativeButtonKeyCode: 331
   _buttonInteractionColliders: []
 --- !u!1 &5658358623419371213
 GameObject:

@@ -230,7 +230,7 @@ MonoBehaviour:
     Manager: {fileID: 0}
   _streamStateDisplayManager:
     Manager: {fileID: 0}
-  _streamingCamera: {fileID: 0}
+  _streamingCamera: {fileID: 7221765368305349838}
   _targetResolution: 0
   _enableMicrophone: 0
   _microphoneMuted: 0
