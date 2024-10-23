@@ -43,15 +43,6 @@ namespace BeamXR.Streaming.Gui
         private GameObject _buttonContainer;
 
         [SerializeField]
-        private bool _allowPhysicalButtonsAndTriggers = true;
-
-        [SerializeField]
-        private KeyCode _positiveButtonKeyCode = KeyCode.JoystickButton0;
-
-        [SerializeField]
-        private KeyCode _negativeButtonKeyCode = KeyCode.JoystickButton1;
-
-        [SerializeField]
         [Tooltip("A list of colliders which can interact with buttons by intersection. Attach small colliders to things like your controllers and index finger prefabs.")]
         private Collider[] _buttonInteractionColliders;
 
@@ -93,41 +84,6 @@ namespace BeamXR.Streaming.Gui
             }
 
             CheckCubeInteractions();
-
-            if (_allowPhysicalButtonsAndTriggers)
-            {
-                // Check if the A button was pressed.
-                if (Input.GetKeyDown(_positiveButtonKeyCode))
-                {
-                    _timeUntilNextClick = 3.0f;
-
-                    if (_positiveButton.activeSelf && _positiveButton.GetComponent<UnityEngine.UI.Button>().interactable)
-                    {
-                        Debug.Log("Positive button pressed and interactable.");
-                        _positiveButton.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
-                    }
-                    else
-                    {
-                        Debug.Log("Positive button not interactable or not active.");
-                    }
-                }
-
-                // Check if the B button was pressed.
-                if (Input.GetKeyDown(_negativeButtonKeyCode))
-                {
-                    _timeUntilNextClick = 3.0f;
-
-                    if (_negativeButton.activeSelf && _negativeButton.GetComponent<UnityEngine.UI.Button>().interactable)
-                    {
-                        Debug.Log("Negative button pressed and interactable.");
-                        _negativeButton.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
-                    }
-                    else
-                    {
-                        Debug.Log("Negative button not interactable or not active.");
-                    }
-                }
-            }
         }
 
         void CheckCubeInteractions()
@@ -261,11 +217,6 @@ namespace BeamXR.Streaming.Gui
 
             var textWithButtonIndicator = $"{text}";
 
-            if (_allowPhysicalButtonsAndTriggers)
-            {
-                textWithButtonIndicator = $"{text} ({GetHumanReadableButtonName(_positiveButtonKeyCode)})";
-            }
-
             _positiveButton.GetComponentInChildren<TMP_Text>().text = textWithButtonIndicator;
 
             var button = _positiveButton.GetComponent<UnityEngine.UI.Button>();
@@ -289,11 +240,6 @@ namespace BeamXR.Streaming.Gui
             _negativeButton.SetActive(true);
 
             var textWithButtonIndicator = $"{text}";
-
-            if (_allowPhysicalButtonsAndTriggers)
-            {
-                textWithButtonIndicator = $"{text} ({GetHumanReadableButtonName(_negativeButtonKeyCode)})";
-            }
 
             _negativeButton.GetComponentInChildren<TMP_Text>().text = textWithButtonIndicator;
 
