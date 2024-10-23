@@ -1,8 +1,4 @@
-﻿using BeamXR.Streaming;
-using BeamXR.Streaming.Core;
-using Newtonsoft.Json.Linq;
-using System;
-using System.IO;
+﻿using BeamXR.Streaming.Core;
 using System.Linq;
 using System.Xml;
 using Unity.XR.Oculus;
