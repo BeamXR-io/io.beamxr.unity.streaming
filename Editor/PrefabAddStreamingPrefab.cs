@@ -4,14 +4,22 @@ using UnityEngine;
 
 namespace BeamXR.Streaming.Editor
 {
-
     public class PrefabAddStreamingPrefab : MonoBehaviour
     {
         [MenuItem("BeamXR/Prefabs/Core/Add Streaming Prefab")]
         private static void AddStreamingPrefab()
         {
-            // Load the prefab.
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/BeamXR.Streaming/Runtime/Prefabs/BeamXR-Streaming.prefab");
+            // Search for the prefab by name.
+            string[] guids = AssetDatabase.FindAssets("BeamXR-Streaming");
+            if (guids.Length == 0)
+            {
+                Debug.LogError("BeamXR-Streaming prefab not found!");
+                return;
+            }
+
+            // Load the first matching asset.
+            string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
 
             BeamStreamingManager existingManager = GameObject.FindAnyObjectByType<BeamStreamingManager>();
 
@@ -32,8 +40,17 @@ namespace BeamXR.Streaming.Editor
         [MenuItem("BeamXR/Prefabs/UI/Add Interaction Panel Prefab")]
         private static void AddInteractionPanelPrefab()
         {
-            // Load the prefab.
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/BeamXR.Streaming/Runtime/Prefabs/BeamXR Interaction Panel.prefab");
+            // Search for the prefab by name.
+            string[] guids = AssetDatabase.FindAssets("BeamXR Interaction Panel");
+            if (guids.Length == 0)
+            {
+                Debug.LogError("BeamXR Interaction Panel prefab not found!");
+                return;
+            }
+
+            // Load the first matching asset.
+            string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
 
             // Check to see if there's already an instance of the prefab in the scene.
             GameObject existingPrefab = GameObject.Find("BeamXR Interaction Panel");
@@ -44,7 +61,7 @@ namespace BeamXR.Streaming.Editor
                 GameObject newPrefab = Instantiate(prefab);
                 newPrefab.name = "BeamXR Interaction Panel";
                 existingPrefab = GameObject.Find("BeamXR Interaction Panel");
-                existingPrefab.transform.transform.position = new Vector3(0, 1.2f, 0.5f);
+                existingPrefab.transform.position = new Vector3(0, 1.2f, 0.5f);
             }
             else
             {
@@ -63,5 +80,4 @@ namespace BeamXR.Streaming.Editor
             }
         }
     }
-
 }
