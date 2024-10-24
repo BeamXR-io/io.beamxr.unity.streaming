@@ -100,6 +100,11 @@ namespace BeamXR.Streaming.Gui
                 {
                     foreach (var collider in _buttonInteractionColliders)
                     {
+                        if (_timeUntilNextClick > 0.0f)
+                        {
+                            continue;
+                        }
+
                         // Check the item is active.
                         if (!collider.gameObject.activeInHierarchy)
                         {
@@ -118,10 +123,10 @@ namespace BeamXR.Streaming.Gui
                             // See if the button is interactable and active.
                             if (button != null && button.interactable && button.gameObject.activeInHierarchy)
                             {
+                                _timeUntilNextClick = 3.0f;
+
                                 // Simulate a click.
                                 button.onClick.Invoke();
-
-                                _timeUntilNextClick = 3.0f;
 
                                 return;
                             }
