@@ -343,6 +343,11 @@ public class BeamXRProjectSetupChecklist : EditorWindow
               <uses-permission android:name=""android.permission.RECORD_AUDIO"" />
             </manifest>";
 
+        if (!System.IO.Directory.Exists("Assets/Plugins/Android"))
+        {
+            System.IO.Directory.CreateDirectory("Assets/Plugins/Android");
+        }
+
         System.IO.File.WriteAllText(AndroidManifestPath, defaultManifest);
         AssetDatabase.Refresh();
         Debug.Log("Created default AndroidManifest.xml");
