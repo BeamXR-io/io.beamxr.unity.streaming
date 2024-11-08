@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-
 public class PlayerPrefsClearer : MonoBehaviour
 {
     [MenuItem("BeamXR/Tools/Clear PlayerPrefs")]

@@ -1,4 +1,5 @@
 using BeamXR.Streaming.Core;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -48,6 +49,13 @@ namespace BeamXR.Streaming.Editor
                 return;
             }
 
+            // If more than one asset is found, find the one that is exactly the right name.
+            if (guids.Length > 1)
+            {
+                // Filter the guid list to only include the one that is exactly the right name.
+                guids = guids.Where(guid => AssetDatabase.GUIDToAssetPath(guid).Contains("BeamXR Interaction Panel.prefab")).ToArray();
+            }
+
             // Load the first matching asset.
             string path = AssetDatabase.GUIDToAssetPath(guids[0]);
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
@@ -76,7 +84,6 @@ namespace BeamXR.Streaming.Editor
             {
                 var behaviour = existingPrefab.GetComponent<Gui.BeamInteractionPanel>();
                 beamStreamingManager._deviceFlowInstructionsManager.Manager = behaviour;
-                beamStreamingManager._streamStateDisplayManager.Manager = behaviour;
             }
         }
     }

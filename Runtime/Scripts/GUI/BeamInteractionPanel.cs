@@ -1,16 +1,23 @@
-using BeamXR.Streaming.Core.Auth.DeviceFlow;
-using BeamXR.Streaming.Core.StreamState;
 using UnityEngine;
 using TMPro;
-using System.Linq;
 using BeamXR.Streaming.Core;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace BeamXR.Streaming.Gui
 {
     [RequireComponent(typeof(Canvas))]
-    public class BeamInteractionPanel : MonoBehaviour, IDeviceFlowInstructionsManager, IStreamStateDisplayManager
+    public class BeamInteractionPanel : MonoBehaviour
     {
         #region Fields
+
+        private Canvas _canvas;
+        private float _timeUntilNextClick = 2.0f;
+        private string _streamingUrl;
+        private AuthenticationState _knownAuthState;
+        private StreamingState _knownStreamingState;
+        private bool _knownRecordingState;
+        private bool _initialised = false;
 
         [SerializeField]
         private Color _positiveButtonColour = new Color(0.0f, (1.0f / 255.0f) * 173.0f, (1.0f / 255.0f) * 16.0f, 255.0f);
@@ -45,10 +52,7 @@ namespace BeamXR.Streaming.Gui
         [SerializeField]
         [Tooltip("A list of colliders which can interact with buttons by intersection. Attach small colliders to things like your controllers and index finger prefabs.")]
         private Collider[] _buttonInteractionColliders;
-
-        private Canvas _canvas;
-        private float _timeUntilNextClick = 10.0f;
-        private string _streamingUrl;
+        private string _knownAvailableHosts;
 
         #endregion Fields
 
@@ -59,79 +63,233 @@ namespace BeamXR.Streaming.Gui
             DontDestroyOnLoad(gameObject);
 
             _canvas = GetComponent<Canvas>();
-
-            // Find every button in the children of this and add the CubeButton component.
-            foreach (var button in GetComponentsInChildren<UnityEngine.UI.Button>())
-            {
-                var cubeButton = button.gameObject.AddComponent<BeamCubeButton>();
-            }
-
-            Hide();
         }
 
         void Awake()
         {
-
+            HidePositiveButton();
+            HideNegativeButton();
+            HideMessage();
+            HideStatus();
+            _initialised = false;
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (_timeUntilNextClick > 0.0f)
+            var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
+
+            if (beamStreamingManager == null)
             {
-                _timeUntilNextClick -= Time.deltaTime;
+                // Hide all the buttons.
+                Hide();
                 return;
             }
 
-            CheckCubeInteractions();
-        }
+            _canvas.enabled = true;
 
-        void CheckCubeInteractions()
-        {
-            // Get all the cubes (buttons) in the scene.
-            var cubes = FindObjectsOfType<BeamCubeButton>();
+            _timeUntilNextClick -= Time.deltaTime;
 
-            foreach (var cube in cubes)
+            CheckButtonInteractions();
+
+            bool requiresUpdate = false;
+
+            if (!_initialised)
             {
-                // Get the cube collider.
-                var cubeCollider = cube.GetCollider();
+                _initialised = true;
+                requiresUpdate = true;
+            }
 
-                if (_buttonInteractionColliders != null)
+            // If the auth state or streaming state has changed, update the UI.
+            if (beamStreamingManager.AuthState != _knownAuthState)
+            {
+                requiresUpdate = true;
+                _knownAuthState = beamStreamingManager.AuthState;
+            }
+
+            if (beamStreamingManager.StreamingState != _knownStreamingState || beamStreamingManager.SessionState?.IsRecording != _knownRecordingState)
+            {
+                requiresUpdate = true;
+                _knownStreamingState = beamStreamingManager.StreamingState;
+                _knownRecordingState = beamStreamingManager.SessionState?.IsRecording ?? false;
+            }
+
+            var beamHostsIds = new List<string>();
+
+            if (beamStreamingManager.AvailableStreamingHosts != null && beamStreamingManager.AvailableStreamingHosts.Count() > 0)
+            {
+                beamHostsIds = beamStreamingManager.AvailableStreamingHosts.Select(x => x.id).OrderBy(x => x).ToList();
+            }
+
+            var joinedHosts = string.Join(",", beamHostsIds);
+
+            if (joinedHosts != _knownAvailableHosts)
+            {
+                requiresUpdate = true;
+                _knownAvailableHosts = joinedHosts;
+            }
+
+            HidePositiveButton();
+            HideNegativeButton();
+            HideMessage();
+            HideStatus();
+
+            if (beamStreamingManager.AuthState == AuthenticationState.NotAuthenticated || beamStreamingManager.AuthState == AuthenticationState.Error)
+            {
+                ShowStatus("You'll need to log in to Beam to start streaming.");
+
+                ShowMessage("Please use the button below to log in to Beam.");
+
+                ShowPositiveButton("Log in to Beam", () =>
                 {
-                    foreach (var collider in _buttonInteractionColliders)
+                    beamStreamingManager.Authenticate();
+                });
+
+                return;
+            }
+
+            // Set which buttons are available based on the state.
+            if (beamStreamingManager.AuthState == AuthenticationState.Authenticating)
+            {
+                ShowStatus("Authenticating");
+
+                if (beamStreamingManager.DeviceFlowCode != null)
+                {
+                    ShowMessage($"Please visit {beamStreamingManager.DeviceFlowCode.VerificationUrl} and enter the code {beamStreamingManager.DeviceFlowCode.UserCode}");
+                }
+                else
+                {
+                    ShowMessage("Please wait while we authenticate you.");
+                }
+
+                return;
+            }
+
+            // We're authenticated. Branch the logic on the streaming state.
+            ShowMessage(beamStreamingManager.GetStreamerInstructions());
+
+            switch (beamStreamingManager.StreamingState)
+            {
+                case StreamingState.Disconnected:
                     {
-                        if (_timeUntilNextClick > 0.0f)
+                        ShowStatus("Offline");
+                        
+                        ShowPositiveButton("Start streaming", () =>
                         {
-                            continue;
-                        }
-
-                        // Check the item is active.
-                        if (!collider.gameObject.activeInHierarchy)
+                            beamStreamingManager.StartStreaming();
+                        });
+                    }
+                    break;
+                case StreamingState.Error:
+                    {
+                        ShowStatus("Error");
+                        ShowPositiveButton("Retry", () =>
                         {
-                            continue;
-                        }
-
-                        // Check to see if it is colliding with the cube.
-                        if (cubeCollider.bounds.Intersects(collider.bounds))
+                            beamStreamingManager.StartStreaming();
+                        });
+                    }
+                    break;
+                case StreamingState.Streaming:
+                    {
+                        // Check if we're recording.
+                        if (beamStreamingManager.SessionState?.IsRecording == true)
                         {
-                            // Log the name of the object.
-                            Debug.Log($"Colliding with {collider.gameObject.name}");
-
-                            // Get the button.
-                            var button = cube.GetComponentInParent<UnityEngine.UI.Button>();
-
-                            // See if the button is interactable and active.
-                            if (button != null && button.interactable && button.gameObject.activeInHierarchy)
+                            ShowStatus("Recording");
+                            ShowNegativeButton("Stop recording", () =>
                             {
-                                _timeUntilNextClick = 3.0f;
-
-                                // Simulate a click.
-                                button.onClick.Invoke();
-
-                                return;
+                                beamStreamingManager.StopRecording();
+                            });
+                        }
+                        else
+                        {
+                            ShowStatus("Streaming");
+                            
+                            if (beamStreamingManager.SessionState.CanRecord)
+                            {
+                                ShowPositiveButton("Start recording", () =>
+                                {
+                                    beamStreamingManager.StartRecording();
+                                });
                             }
+
+                            ShowNegativeButton("Stop streaming", () =>
+                            {
+                                beamStreamingManager.StopStreaming();
+                            });
                         }
                     }
+                    break;
+                case StreamingState.CreatingSession:
+                case StreamingState.Connecting:
+                    ShowStatus("Connecting");
+                    break;
+                case StreamingState.Connected:
+                    ShowStatus("Connected");
+                    break;
+                case StreamingState.Disconnecting:
+                    ShowStatus("Disconnecting ");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void CheckButtonInteractions()
+        {
+            var positiveButtonCollider = _positiveButton.GetComponent<BoxCollider>();
+            var negativeButtonCollider = _negativeButton.GetComponent<BoxCollider>();
+
+            if (positiveButtonCollider == null)
+            {
+                positiveButtonCollider = _positiveButton.AddComponent<BoxCollider>();
+            }
+
+            if (negativeButtonCollider == null)
+            {
+                negativeButtonCollider = _negativeButton.AddComponent<BoxCollider>();
+            }
+
+            if (_positiveButton.activeInHierarchy && positiveButtonCollider != null)
+            {
+                positiveButtonCollider.size = new Vector2(_positiveButton.GetComponent<RectTransform>().rect.width, _positiveButton.GetComponent<RectTransform>().rect.height);
+
+                // Check to see if the button is being interacted with by any collider.
+                if (_buttonInteractionColliders.Any(x => x.bounds.Intersects(positiveButtonCollider.bounds)))
+                {
+                    if (_timeUntilNextClick <= 0)
+                    {
+                        SetPositiveButtonColour(new Color(0.0f, (1.0f / 255.0f) * 173.0f, (1.0f / 255.0f) * 16.0f, 255.0f));
+                        _timeUntilNextClick = 2.0f;
+                        
+                        var button = _positiveButton.GetComponent<UnityEngine.UI.Button>();
+                        button.onClick.Invoke();
+                    }
+                }
+                else
+                {
+                    ResetPositiveButtonColour();
+                }
+            }
+
+            if (_negativeButton.activeInHierarchy && negativeButtonCollider != null)
+            {
+                negativeButtonCollider.size = new Vector2(_negativeButton.GetComponent<RectTransform>().rect.width, _negativeButton.GetComponent<RectTransform>().rect.height);
+
+                // Check to see if the button is being interacted with by any collider (not just the interaction collider).
+                if (_buttonInteractionColliders.Any(x => x.bounds.Intersects(negativeButtonCollider.bounds)))
+                {
+                    if (_timeUntilNextClick <= 0)
+                    {
+                        SetNegativeButtonColour(new Color(0.0f, (1.0f / 255.0f) * 173.0f, (1.0f / 255.0f) * 16.0f, 255.0f));
+                        _timeUntilNextClick = 2.0f;
+
+                        var button = _negativeButton.GetComponent<UnityEngine.UI.Button>();
+                        button.onClick.Invoke();
+                    }
+                }
+                else
+                {
+                    ResetNegativeButtonColour();
                 }
             }
         }
@@ -262,296 +420,7 @@ namespace BeamXR.Streaming.Gui
             ResetNegativeButtonColour();
         }
 
-        string GetHumanReadableButtonName(KeyCode keyCode)
-        {
-            // Get the name of the key code depending on the platform.
-            var buttonName = keyCode.ToString();
-
-            // If the button name is a single letter then we can just return that.
-            if (buttonName.Length == 1)
-            {
-                return buttonName;
-            }
-
-            // If the button name is a joystick button then we need to map it to the correct button depending on the platform (XBox, PS4, Meta Quest).
-            if (buttonName.StartsWith("Joystick", System.StringComparison.OrdinalIgnoreCase))
-            {
-                // If the button name is a joystick button then we need to map it to the correct button depending on the platform (XBox, PS4, Meta Quest).
-                if (buttonName.EndsWith("Button0"))
-                {
-                    buttonName = "A";
-                }
-                else if (buttonName.EndsWith("Button1"))
-                {
-                    buttonName = "B";
-                }
-                else if (buttonName.EndsWith("Button2"))
-                {
-                    buttonName = "X";
-                }
-                else if (buttonName.EndsWith("Button3"))
-                {
-                    buttonName = "Y";
-                }
-                else if (buttonName.EndsWith("Button4"))
-                {
-                    buttonName = "LB";
-                }
-                else if (buttonName.EndsWith("Button5"))
-                {
-                    buttonName = "RB";
-                }
-                else if (buttonName.EndsWith("Button6"))
-                {
-                    buttonName = "Back";
-                }
-                else if (buttonName.EndsWith("Button7"))
-                {
-                    buttonName = "Start";
-                }
-                else if (buttonName.EndsWith("Button8"))
-                {
-                    buttonName = "LS";
-                }
-                else if (buttonName.EndsWith("Button9"))
-                {
-                    buttonName = "RS";
-                }
-            }
-
-            return buttonName;
-        }
-
         #endregion Methods
-
-        #region IDeviceFlowInstructionsManager implementation
-
-        void IDeviceFlowInstructionsManager.ShowError(string error)
-        {
-            Hide();
-
-            ShowStatus("Error");
-
-            ShowMessage(error);
-
-            ShowPositiveButton("Retry", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.Authenticate();
-                }
-
-                HidePositiveButton();
-            });
-        }
-
-        void IDeviceFlowInstructionsManager.ShowSignout()
-        {
-            Hide();
-
-            ShowStatus("Logged out");
-
-            ShowPositiveButton("Sign in", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.Authenticate();
-                }
-
-                HidePositiveButton();
-            });
-        }
-
-        void IDeviceFlowInstructionsManager.ShowSuccess(string message)
-        {
-            Hide();
-
-            ShowStatus("Authenticated");
-        }
-
-        void IDeviceFlowInstructionsManager.ShowUserCode(string userCode, string verificationUri)
-        {
-            Hide();
-
-            ShowStatus("Please sign in");
-
-            ShowMessage($"Visit: \n{verificationUri}\n\nand enter code:\n{userCode}");
-        }
-
-        #endregion IDeviceFlowInstructionsManager implementation
-
-        #region IStreamStateDisplayManager implementation
-
-        void IStreamStateDisplayManager.ShowAvailableHosts(System.Collections.Generic.IEnumerable<BeamXR.Streaming.Core.StreamingHostSummary> hosts)
-        {
-            ShowStatus(hosts.Any() ? "Available hosts" : "No hosts available.");
-
-            // Build a list of hosts as a string.
-            var hostList = string.Empty;
-
-            foreach (var host in hosts)
-            {
-                hostList += $"{host.hostName}\n";
-            }
-
-            ShowMessage(hosts.Any() ? $"The following hosts are available: {hostList}" : "Cloud streaming is available");
-        }
-
-        void IStreamStateDisplayManager.ShowRecordingStarted()
-        {
-            ShowStatus("Streaming + Recording");
-
-            ShowMessage($"Now streaming and recording. To watch along visit \n{_streamingUrl}");
-
-            ShowPositiveButton("Stop recording", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StopRecording();
-                }
-
-                HidePositiveButton();
-            });
-
-            ShowNegativeButton("Stop streaming", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StopStreaming();
-                }
-
-                HideNegativeButton();
-                HidePositiveButton();
-            });
-
-            SetPositiveButtonColour(_negativeButtonColour);
-        }
-
-        void IStreamStateDisplayManager.ShowRecordingStopped()
-        {
-            ShowStatus("Streaming. Recording stopped.");
-
-            ShowPositiveButton("Start recording", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StartRecording();
-                }
-
-                HidePositiveButton();
-            });
-
-            ShowNegativeButton("Stop streaming", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StopStreaming();
-                }
-
-                HideNegativeButton();
-            });
-        }
-
-        void IStreamStateDisplayManager.ShowError(string error)
-        {
-            Hide();
-
-            ShowStatus("Streaming error");
-
-            ShowMessage(error);
-
-            ShowPositiveButton("Retry", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StartStreaming();
-                }
-
-                HidePositiveButton();
-            });
-        }
-
-        void IStreamStateDisplayManager.ShowWatchUrl(string url)
-        {
-            _streamingUrl = url;
-
-            Hide();
-
-            ShowStatus("Streaming");
-
-            ShowMessage($"Now streaming. To watch the stream go to:\n{url}");
-
-            ShowPositiveButton("Start recording", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StartRecording();
-                }
-
-                HidePositiveButton();
-            });
-
-            ShowNegativeButton("Stop streaming", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StopStreaming();
-                }
-
-                HideNegativeButton();
-            });
-        }
-
-        void IStreamStateDisplayManager.ShowStreamEnded()
-        {
-            Hide();
-
-            ShowStatus("Stream ended");
-
-            ShowMessage("To start streaming again please press below");
-
-            ShowPositiveButton("Start streaming", () =>
-            {
-                // Try and get the beam streaming manager.
-                var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-                if (beamStreamingManager != null)
-                {
-                    beamStreamingManager.StartStreaming();
-                }
-
-                HidePositiveButton();
-            });
-        }
-
-        #endregion IStreamStateDisplayManager implementation
     }
 
 }
