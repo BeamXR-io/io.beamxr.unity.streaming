@@ -1,4 +1,7 @@
 using BeamXR.Streaming.Core;
+using BeamXR.Streaming.Core.Models.StreamingHosts;
+using System.Diagnostics.Eventing.Reader;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -39,7 +42,7 @@ namespace BeamXR.Streaming.Gui
             if (EditorApplication.isPlaying)
             {
                 ShowUserState(beamManager);
-                ShowArchitectureState(beamManager);
+                ShowAvailableHosts(beamManager);
                 ShowStreamingState(beamManager);
             }
         }
@@ -57,10 +60,39 @@ namespace BeamXR.Streaming.Gui
 
             if (beamManager.Me == null)
             {
-                ShowColouredBox("Not logged in", Color.red, Color.white);
-                if (GUILayout.Button("Sign in"))
+                if (beamManager.AuthState == AuthenticationState.Error)
                 {
-                    beamManager.Authenticate();
+                    ShowColouredBox("Error signing in", Color.red, Color.white);
+                    return;
+                }
+
+                if (beamManager.AuthState == AuthenticationState.Authenticating)
+                {
+                    ShowColouredBox("Signing in...", Color.yellow, Color.black);
+                }
+                else
+                {
+                    ShowColouredBox("Not logged in", Color.red, Color.white);
+
+                    if (GUILayout.Button("Sign in"))
+                    {
+                        beamManager.Authenticate();
+                    }
+                }
+
+                if (beamManager.DeviceFlowCode != null)
+                {
+                    EditorGUILayout.LabelField("Device flow code", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"Go to the following URL:");
+                    ShowColouredBox(beamManager.DeviceFlowCode.VerificationUrl, Color.green, Color.black);
+                    EditorGUILayout.LabelField($"Enter the following code:");
+                    ShowColouredBox(beamManager.DeviceFlowCode.UserCode, Color.green, Color.black);
+
+                    if (GUILayout.Button("Open browser"))
+                    {
+                        // Open the browser to the verification URL.
+                        Application.OpenURL(beamManager.DeviceFlowCode.VerificationUrlComplete);
+                    }
                 }
             }
             else
@@ -73,23 +105,36 @@ namespace BeamXR.Streaming.Gui
             }
         }
 
-        private void ShowArchitectureState(BeamStreamingManager beamManager)
+        private void ShowAvailableHosts(BeamStreamingManager beamManager)
         {
-            // Label for Streaming State
-            EditorGUILayout.LabelField("Architecture", EditorStyles.boldLabel);
-
-            var architecture = "LAN Streaming Client";
-
-            if (beamManager.StreamingArchitecture == StreamingArchitecture.StageBasedWebRTC)
+            if (beamManager.Me == null)
             {
-                architecture = "Cloud Stage";
+                return;
             }
 
-            ShowColouredBox(architecture);
+            // Label for Streaming State
+            EditorGUILayout.LabelField("Available hosts", EditorStyles.boldLabel);
+
+            if (beamManager.AvailableStreamingHosts == null || beamManager.AvailableStreamingHosts.Length == 0)
+            {
+                ShowColouredBox("No streaming hosts available - will stream to cloud", Color.red, Color.white);
+            }
+            else
+            {
+                foreach (var host in beamManager.AvailableStreamingHosts)
+                {
+                    ShowColouredBox(host.hostName, Color.gray, Color.black);
+                }
+            }
         }
 
         private void ShowStreamingState(BeamStreamingManager beamManager)
         {
+            if (beamManager.Me == null)
+            {
+                return;
+            }
+
             // Label for Streaming State
             EditorGUILayout.LabelField("Streaming state", EditorStyles.boldLabel);
 
@@ -127,13 +172,65 @@ namespace BeamXR.Streaming.Gui
 
             if (beamManager.StreamingState == StreamingState.Disconnected || beamManager.StreamingState == StreamingState.Error)
             {
+                // Create a dropdown list of the available hosts + one more for cloud.
+                var hosts = beamManager.AvailableStreamingHosts.ToList();
+
+                var hostNames = hosts.Select(x => x.hostName).ToList();
+                var hostIds = hosts.Select(x => x.id).ToList();
+
+                hostNames.Add("Cloud");
+                hostIds.Add("");
+
+                int selection = hostIds.Count - 1;
+
+                if (beamManager.PreferredStreamingHost != null)
+                {
+                    var preferredHostId = hostIds.IndexOf(beamManager.PreferredStreamingHost.id);
+                    if (preferredHostId != -1)
+                    {
+                        selection = preferredHostId;
+                    }
+                }
+
+                var newSelectionId = GUILayout.SelectionGrid(selection, hostNames.ToArray(), hostNames.Count);
+
+                if (newSelectionId != selection)
+                {
+                    beamManager.SetPreferredStreamingHost(hostIds[newSelectionId]);
+                    selection = newSelectionId;
+                }
+
                 if (GUILayout.Button("Start streaming"))
                 {
-                    beamManager.StartStreaming();
+                    var hostId = hostIds[selection];
+
+                    if (hostId == "")
+                    {
+                        beamManager.StartStreamingToCloud();
+                    }
+                    else
+                    {
+                        beamManager.StartStreaming(hostId);
+                    }
                 }
             }
             else if (beamManager.StreamingState == StreamingState.Streaming)
             {
+                if (beamManager.SessionState.ActiveUrls != null && beamManager.SessionState.ActiveUrls.Count() > 0)
+                {
+                    EditorGUILayout.LabelField("Active URLs");
+
+                    foreach (var url in beamManager.SessionState.ActiveUrls)
+                    {
+                        if (GUILayout.Button(url.Type))
+                        {
+                            Application.OpenURL(url.Url);
+                        }
+                    }
+                }
+
+                EditorGUILayout.LabelField("Stream control");
+
                 if (GUILayout.Button("Stop streaming"))
                 {
                     beamManager.StopStreaming();
@@ -142,23 +239,62 @@ namespace BeamXR.Streaming.Gui
                 EditorGUILayout.LabelField("Recording state", EditorStyles.boldLabel);
 
                 ShowColouredBox(
-                    beamManager.RecordingState == RecordingState.Recording ? "Recording" : "Not recording",
-                    beamManager.RecordingState == RecordingState.Recording ? Color.green : Color.grey,
-                    beamManager.RecordingState == RecordingState.Recording ? Color.red : Color.black);
+                    beamManager.IsRecording ? "Recording" : "Not recording",
+                    beamManager.IsRecording ? Color.green : Color.grey,
+                    beamManager.IsRecording ? Color.red : Color.black);
 
-                if (beamManager.RecordingState == RecordingState.Recording)
+                if (beamManager.IsRecording)
                 {
                     if (GUILayout.Button("Stop recording"))
                     {
                         beamManager.StopRecording();
                     }
                 }
-
-                if (beamManager.RecordingState == RecordingState.NotRecording)
+                else
                 {
                     if (GUILayout.Button("Start recording"))
                     {
                         beamManager.StartRecording();
+                    }
+                }
+
+                if (beamManager.SessionState != null)
+                {
+                    EditorGUILayout.LabelField("Session capabilities");
+
+                    var unicodeTick = "Yes";
+                    var unicodeCross = "No";
+
+                    EditorGUILayout.LabelField($"Can record: {(beamManager.SessionState.CanRecord ? unicodeTick : unicodeCross)}", EditorStyles.label);
+                    EditorGUILayout.LabelField($"Can view in portal: {(beamManager.SessionState.IsPortalVisibilityEnabled ? unicodeTick : unicodeCross)}", EditorStyles.label);
+                    EditorGUILayout.LabelField($"Can view in go-live link: {(beamManager.SessionState.IsGoLiveEnabled ? unicodeTick : unicodeCross)}", EditorStyles.label);
+
+                    if (beamManager.SessionState.CanGoLiveServices != null && beamManager.SessionState.CanGoLiveServices.Count() > 0)
+                    {
+                        EditorGUILayout.LabelField("Can go live on services");
+
+                        foreach (var service in beamManager.SessionState.CanGoLiveServices)
+                        {
+                            EditorGUILayout.LabelField(service.ToString(), EditorStyles.label);
+                        }
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("Can go live on services: None", EditorStyles.label);
+                    }
+
+                    if (beamManager.SessionState.CanChatServices != null && beamManager.SessionState.CanChatServices.Count() > 0)
+                    {
+                        EditorGUILayout.LabelField("Can go chat on services");
+
+                        foreach (var service in beamManager.SessionState.CanChatServices)
+                        {
+                            EditorGUILayout.LabelField(service.ToString(), EditorStyles.label);
+                        }
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("Can go chat on services: None", EditorStyles.label);
                     }
                 }
             }

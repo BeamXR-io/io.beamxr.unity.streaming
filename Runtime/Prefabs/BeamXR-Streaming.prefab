@@ -98,7 +98,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -227,8 +227,6 @@ MonoBehaviour:
   _credentialsManager:
     Manager: {fileID: 0}
   _deviceFlowInstructionsManager:
-    Manager: {fileID: 0}
-  _streamStateDisplayManager:
     Manager: {fileID: 0}
   _streamingCamera: {fileID: 7221765368305349838}
   _targetResolution: 0
