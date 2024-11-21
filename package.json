@@ -5,7 +5,7 @@
     "email": "support@beamxr.io"
   },
   "displayName": "BeamXR Streaming",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "The package provides Standalone VR applications with the ability to live stream via BeamXR services.",
   "keywords": [
     "oculus",
