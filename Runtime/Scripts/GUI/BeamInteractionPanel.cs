@@ -17,8 +17,7 @@ namespace BeamXR.Streaming.Gui
         private AuthenticationState _knownAuthState;
         private StreamingState _knownStreamingState;
         private bool _knownRecordingState;
-        private bool _initialised = false;
-
+        private BeamStreamingManager _beamStreamingManager;
         [SerializeField]
         private Color _positiveButtonColour = new Color(0.0f, (1.0f / 255.0f) * 173.0f, (1.0f / 255.0f) * 16.0f, 255.0f);
 
@@ -71,15 +70,13 @@ namespace BeamXR.Streaming.Gui
             HideNegativeButton();
             HideMessage();
             HideStatus();
-            _initialised = false;
+            _beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
         }
 
         // Update is called once per frame
         void Update()
         {
-            var beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
-
-            if (beamStreamingManager == null)
+            if (_beamStreamingManager == null)
             {
                 // Hide all the buttons.
                 Hide();
@@ -92,40 +89,29 @@ namespace BeamXR.Streaming.Gui
 
             CheckButtonInteractions();
 
-            bool requiresUpdate = false;
-
-            if (!_initialised)
-            {
-                _initialised = true;
-                requiresUpdate = true;
-            }
-
             // If the auth state or streaming state has changed, update the UI.
-            if (beamStreamingManager.AuthState != _knownAuthState)
+            if (_beamStreamingManager.AuthState != _knownAuthState)
             {
-                requiresUpdate = true;
-                _knownAuthState = beamStreamingManager.AuthState;
+                _knownAuthState = _beamStreamingManager.AuthState;
             }
 
-            if (beamStreamingManager.StreamingState != _knownStreamingState || beamStreamingManager.SessionState?.IsRecording != _knownRecordingState)
+            if (_beamStreamingManager.StreamingState != _knownStreamingState || _beamStreamingManager.SessionState?.IsRecording != _knownRecordingState)
             {
-                requiresUpdate = true;
-                _knownStreamingState = beamStreamingManager.StreamingState;
-                _knownRecordingState = beamStreamingManager.SessionState?.IsRecording ?? false;
+                _knownStreamingState = _beamStreamingManager.StreamingState;
+                _knownRecordingState = _beamStreamingManager.SessionState?.IsRecording ?? false;
             }
 
             var beamHostsIds = new List<string>();
 
-            if (beamStreamingManager.AvailableStreamingHosts != null && beamStreamingManager.AvailableStreamingHosts.Count() > 0)
+            if (_beamStreamingManager.AvailableStreamingHosts != null && _beamStreamingManager.AvailableStreamingHosts.Count() > 0)
             {
-                beamHostsIds = beamStreamingManager.AvailableStreamingHosts.Select(x => x.id).OrderBy(x => x).ToList();
+                beamHostsIds = _beamStreamingManager.AvailableStreamingHosts.Select(x => x.id).OrderBy(x => x).ToList();
             }
 
             var joinedHosts = string.Join(",", beamHostsIds);
 
             if (joinedHosts != _knownAvailableHosts)
             {
-                requiresUpdate = true;
                 _knownAvailableHosts = joinedHosts;
             }
 
@@ -134,7 +120,7 @@ namespace BeamXR.Streaming.Gui
             HideMessage();
             HideStatus();
 
-            if (beamStreamingManager.AuthState == AuthenticationState.NotAuthenticated || beamStreamingManager.AuthState == AuthenticationState.Error)
+            if (_beamStreamingManager.AuthState == AuthenticationState.NotAuthenticated || _beamStreamingManager.AuthState == AuthenticationState.Error)
             {
                 ShowStatus("You'll need to log in to Beam to start streaming.");
 
@@ -142,20 +128,27 @@ namespace BeamXR.Streaming.Gui
 
                 ShowPositiveButton("Log in to Beam", () =>
                 {
-                    beamStreamingManager.Authenticate();
+                    _beamStreamingManager.Authenticate();
                 });
 
                 return;
             }
 
             // Set which buttons are available based on the state.
-            if (beamStreamingManager.AuthState == AuthenticationState.Authenticating)
+            if (_beamStreamingManager.AuthState == AuthenticationState.Authenticating)
             {
                 ShowStatus("Authenticating");
 
-                if (beamStreamingManager.DeviceFlowCode != null)
+                if (_beamStreamingManager.DeviceFlowCode != null)
                 {
-                    ShowMessage($"Please visit {beamStreamingManager.DeviceFlowCode.VerificationUrl} and enter the code {beamStreamingManager.DeviceFlowCode.UserCode}");
+                    ShowMessage($"Please visit {_beamStreamingManager.DeviceFlowCode.VerificationUrl} and enter the code {_beamStreamingManager.DeviceFlowCode.UserCode}");
+
+                    ShowPositiveButton("Open browser", () =>
+                    {
+                        Application.OpenURL(_beamStreamingManager.DeviceFlowCode.VerificationUrlComplete);
+                        HidePositiveButton();
+                        _timeUntilNextClick = 2.0f;
+                    });
                 }
                 else
                 {
@@ -166,9 +159,9 @@ namespace BeamXR.Streaming.Gui
             }
 
             // We're authenticated. Branch the logic on the streaming state.
-            ShowMessage(beamStreamingManager.GetStreamerInstructions());
+            ShowMessage(_beamStreamingManager.GetStreamerInstructions());
 
-            switch (beamStreamingManager.StreamingState)
+            switch (_beamStreamingManager.StreamingState)
             {
                 case StreamingState.Disconnected:
                     {
@@ -176,7 +169,7 @@ namespace BeamXR.Streaming.Gui
                         
                         ShowPositiveButton("Start streaming", () =>
                         {
-                            beamStreamingManager.StartStreaming();
+                            _beamStreamingManager.StartStreaming();
                         });
                     }
                     break;
@@ -185,36 +178,36 @@ namespace BeamXR.Streaming.Gui
                         ShowStatus("Error");
                         ShowPositiveButton("Retry", () =>
                         {
-                            beamStreamingManager.StartStreaming();
+                            _beamStreamingManager.StartStreaming();
                         });
                     }
                     break;
                 case StreamingState.Streaming:
                     {
                         // Check if we're recording.
-                        if (beamStreamingManager.SessionState?.IsRecording == true)
+                        if (_beamStreamingManager.SessionState?.IsRecording == true)
                         {
                             ShowStatus("Recording");
                             ShowNegativeButton("Stop recording", () =>
                             {
-                                beamStreamingManager.StopRecording();
+                                _beamStreamingManager.StopRecording();
                             });
                         }
                         else
                         {
                             ShowStatus("Streaming");
                             
-                            if (beamStreamingManager.SessionState.CanRecord)
+                            if (_beamStreamingManager.SessionState.CanRecord)
                             {
                                 ShowPositiveButton("Start recording", () =>
                                 {
-                                    beamStreamingManager.StartRecording();
+                                    _beamStreamingManager.StartRecording();
                                 });
                             }
 
                             ShowNegativeButton("Stop streaming", () =>
                             {
-                                beamStreamingManager.StopStreaming();
+                                _beamStreamingManager.StopStreaming();
                             });
                         }
                     }
