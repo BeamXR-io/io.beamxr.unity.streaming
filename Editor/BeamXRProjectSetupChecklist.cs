@@ -1,8 +1,6 @@
 ﻿using BeamXR.Streaming.Core;
-using System.Linq;
 using System.Xml;
 using UnityEditor;
-using UnityEditor.XR.Management;
 using UnityEngine;
 
 public class BeamXRProjectSetupChecklist : EditorWindow
@@ -159,29 +157,29 @@ public class BeamXRProjectSetupChecklist : EditorWindow
 
     private void CheckXRSettingsGui()
     {
-        GUILayout.Label("XR Settings", EditorStyles.boldLabel);
+        //GUILayout.Label("XR Settings", EditorStyles.boldLabel);
 
-        EditorGUILayout.BeginHorizontal();
+        //EditorGUILayout.BeginHorizontal();
 
-        if (IsLowOverheadModeEnabled())
-        {
-            GUILayout.Label(cross, invalidStyle);
+        //if (IsLowOverheadModeEnabled())
+        //{
+        //    GUILayout.Label(cross, invalidStyle);
 
-            EditorGUILayout.HelpBox("Low overhead mode is enabled and will result in a black screen on release builds. Disable low overhead mode.", MessageType.Error);
+        //    EditorGUILayout.HelpBox("Low overhead mode is enabled and will result in a black screen on release builds. Disable low overhead mode.", MessageType.Error);
 
-            if (GUILayout.Button("Fix", GUILayout.Width(50), GUILayout.Height(36)))
-            {
-                DisableLowOverheadMode();
-            }
-        }
-        else
-        {
-            GUILayout.Label(checkmark, validStyle);
+        //    if (GUILayout.Button("Fix", GUILayout.Width(50), GUILayout.Height(36)))
+        //    {
+        //        DisableLowOverheadMode();
+        //    }
+        //}
+        //else
+        //{
+        //    GUILayout.Label(checkmark, validStyle);
 
-            EditorGUILayout.HelpBox("Low overhead mode is correctly disabled.", MessageType.Info);
-        }
+        //    EditorGUILayout.HelpBox("Low overhead mode is correctly disabled.", MessageType.Info);
+        //}
 
-        EditorGUILayout.EndHorizontal();
+        //EditorGUILayout.EndHorizontal();
     }
 
     private void CheckPermissionsGui()
@@ -411,100 +409,100 @@ public class BeamXRProjectSetupChecklist : EditorWindow
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, enabled);
     }
 
-    private bool IsLowOverheadModeEnabled()
-    {
-        var settings = XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(BuildTargetGroup.Android);
+    //private bool IsLowOverheadModeEnabled()
+    //{
+    //    var settings = XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(BuildTargetGroup.Android);
 
-        if (settings == null)
-        {
-            return false;
-        }
+    //    if (settings == null)
+    //    {
+    //        return false;
+    //    }
 
-        var assignedSettings = settings.AssignedSettings;
+    //    var assignedSettings = settings.AssignedSettings;
 
-        if (assignedSettings == null)
-        {
-            return false;
-        }
+    //    if (assignedSettings == null)
+    //    {
+    //        return false;
+    //    }
 
-        var oculusLoader = assignedSettings.activeLoaders.FirstOrDefault(loader => loader.name.Contains("OculusLoader", System.StringComparison.OrdinalIgnoreCase));
+    //    var oculusLoader = assignedSettings.activeLoaders.FirstOrDefault(loader => loader.name.Contains("OculusLoader", System.StringComparison.OrdinalIgnoreCase));
 
-        if (oculusLoader == null)
-        {
-            return false;
-        }
+    //    if (oculusLoader == null)
+    //    {
+    //        return false;
+    //    }
 
-        var oculusSettings = AssetDatabase.FindAssets("t:OculusSettings");
+    //    var oculusSettings = AssetDatabase.FindAssets("t:OculusSettings");
 
-        if (oculusSettings.Length == 0)
-        {
-            return false;
-        }
+    //    if (oculusSettings.Length == 0)
+    //    {
+    //        return false;
+    //    }
 
-        var path = AssetDatabase.GUIDToAssetPath(oculusSettings[0]);
-        var oculusSettingsAsset = AssetDatabase.LoadAssetAtPath<OculusSettings>(path);
+    //    var path = AssetDatabase.GUIDToAssetPath(oculusSettings[0]);
+    //    var oculusSettingsAsset = AssetDatabase.LoadAssetAtPath<OculusSettings>(path);
 
-        if (oculusSettingsAsset == null)
-        {
-            Debug.LogError("Failed to load OculusSettings asset.");
-            return false;
-        }
+    //    if (oculusSettingsAsset == null)
+    //    {
+    //        Debug.LogError("Failed to load OculusSettings asset.");
+    //        return false;
+    //    }
 
-        bool isLowOverheadModeEnabled = oculusSettingsAsset.LowOverheadMode;
+    //    bool isLowOverheadModeEnabled = oculusSettingsAsset.LowOverheadMode;
 
-        return isLowOverheadModeEnabled;
-    }
+    //    return isLowOverheadModeEnabled;
+    //}
 
-    private void DisableLowOverheadMode()
-    {
-        var settings = XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(BuildTargetGroup.Android);
+    //private void DisableLowOverheadMode()
+    //{
+    //    var settings = XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(BuildTargetGroup.Android);
 
-        if (settings == null)
-        {
-            Debug.LogError("XR General Settings not found for Android.");
-            return;
-        }
+    //    if (settings == null)
+    //    {
+    //        Debug.LogError("XR General Settings not found for Android.");
+    //        return;
+    //    }
 
-        var assignedSettings = settings.AssignedSettings;
+    //    var assignedSettings = settings.AssignedSettings;
 
-        if (assignedSettings == null)
-        {
-            Debug.LogError("Assigned XR Settings not found.");
-            return;
-        }
+    //    if (assignedSettings == null)
+    //    {
+    //        Debug.LogError("Assigned XR Settings not found.");
+    //        return;
+    //    }
 
-        var oculusLoader = assignedSettings.activeLoaders.FirstOrDefault(loader => loader.name.Contains("OculusLoader", System.StringComparison.OrdinalIgnoreCase));
+    //    var oculusLoader = assignedSettings.activeLoaders.FirstOrDefault(loader => loader.name.Contains("OculusLoader", System.StringComparison.OrdinalIgnoreCase));
 
-        if (oculusLoader == null)
-        {
-            Debug.LogError("Oculus Loader not found in XR Settings.");
-            return;
-        }
+    //    if (oculusLoader == null)
+    //    {
+    //        Debug.LogError("Oculus Loader not found in XR Settings.");
+    //        return;
+    //    }
 
-        var oculusSettings = AssetDatabase.FindAssets("t:OculusSettings");
+    //    var oculusSettings = AssetDatabase.FindAssets("t:OculusSettings");
 
-        if (oculusSettings.Length == 0)
-        {
-            Debug.LogError("OculusSettings asset not found.");
-            return;
-        }
+    //    if (oculusSettings.Length == 0)
+    //    {
+    //        Debug.LogError("OculusSettings asset not found.");
+    //        return;
+    //    }
 
-        var path = AssetDatabase.GUIDToAssetPath(oculusSettings[0]);
-        var oculusSettingsAsset = AssetDatabase.LoadAssetAtPath<OculusSettings>(path);
+    //    var path = AssetDatabase.GUIDToAssetPath(oculusSettings[0]);
+    //    var oculusSettingsAsset = AssetDatabase.LoadAssetAtPath<OculusSettings>(path);
 
-        if (oculusSettingsAsset == null)
-        {
-            Debug.LogError("Failed to load OculusSettings asset.");
-            return;
-        }
+    //    if (oculusSettingsAsset == null)
+    //    {
+    //        Debug.LogError("Failed to load OculusSettings asset.");
+    //        return;
+    //    }
 
-        // Disable Low Overhead Mode (GLES)
-        oculusSettingsAsset.LowOverheadMode = false;
+    //    // Disable Low Overhead Mode (GLES)
+    //    oculusSettingsAsset.LowOverheadMode = false;
 
-        // Save the changes
-        EditorUtility.SetDirty(oculusSettingsAsset);
-        AssetDatabase.SaveAssets();
+    //    // Save the changes
+    //    EditorUtility.SetDirty(oculusSettingsAsset);
+    //    AssetDatabase.SaveAssets();
 
-        Debug.Log("Low Overhead Mode (GLES) has been disabled.");
-    }
+    //    Debug.Log("Low Overhead Mode (GLES) has been disabled.");
+    //}
 }
