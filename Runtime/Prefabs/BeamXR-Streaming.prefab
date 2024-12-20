@@ -74,7 +74,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1762088863130646617}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -130,8 +130,20 @@ MonoBehaviour:
   m_Script: {fileID: -1738567097, guid: 9af1aae2ae34f9148a0e4534cd24bf72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _unityEvents: {fileID: 0}
   _trackMainCamera: 1
-  _copyMainCameraSettings: 1
+  OnTrackingMainCameraChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _transformToFollow: {fileID: 0}
+  OnTransformToFollowChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _automaticIgnoreLayer: 1
+  _layersToIgnore:
+    serializedVersion: 2
+    m_Bits: 0
+  _specificBeamLayer: -1
 --- !u!114 &3225261688663461794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,7 +173,7 @@ MonoBehaviour:
   m_StopNaN: 0
   m_Dithering: 0
   m_ClearDepth: 1
-  m_AllowXRRendering: 1
+  m_AllowXRRendering: 0
   m_AllowHDROutput: 1
   m_UseScreenCoordOverride: 0
   m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
@@ -186,6 +198,7 @@ GameObject:
   m_Component:
   - component: {fileID: 610576160740770465}
   - component: {fileID: 6489477163053661693}
+  - component: {fileID: 6120182466154416489}
   m_Layer: 0
   m_Name: Beam Streaming Manager
   m_TagString: Untagged
@@ -220,7 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: -2003778758, guid: 9af1aae2ae34f9148a0e4534cd24bf72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _environment: 1
+  _environment: 0
   _experienceKey: 
   _experienceSecret: 
   _authenticateOnAwake: 1
@@ -233,3 +246,42 @@ MonoBehaviour:
   _enableMicrophone: 0
   _microphoneMuted: 0
   _microphoneScalingFactor: 0.2
+  _scaleAndroidResolutionDownBy: 2.25
+  _androidMaxFramerate: 30
+  _androidMaxBitrate: 5000000
+  _scaleWindowsResolutionDownBy: 1
+  _windowsMaxFramerate: 60
+  _windowsMaxBitrate: 5000000
+--- !u!114 &6120182466154416489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4439636432672702733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1462517454, guid: 9af1aae2ae34f9148a0e4534cd24bf72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnStreamingStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStreamStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStreamEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRecordingStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRecordingEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSessionError:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAuthenticationChanged:
+    m_PersistentCalls:
+      m_Calls: []

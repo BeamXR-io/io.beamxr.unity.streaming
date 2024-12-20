@@ -5,7 +5,7 @@
     "email": "support@beamxr.io"
   },
   "displayName": "BeamXR Streaming",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "The package provides Standalone VR applications with the ability to live stream via BeamXR services.",
   "keywords": [
     "oculus",
@@ -16,12 +16,11 @@
     "Streaming",
     "Twitch"
   ],
+  "documentationUrl": "https://docs.beamxr.io/",
   "dependencies": {
     "com.unity.modules.jsonserialize": "1.0.0",
     "com.unity.editorcoroutines": "1.0.0",
     "com.unity.modules.audio": "1.0.0",
-    "com.unity.textmeshpro": ">=3.0.0",
-    "com.unity.modules.xr": "1.0.0",
-    "com.unity.modules.vr": "1.0.0"
+    "com.unity.textmeshpro": "3.0.0"
   }
 }

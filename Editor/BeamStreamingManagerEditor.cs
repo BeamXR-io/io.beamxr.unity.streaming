@@ -9,27 +9,7 @@ namespace BeamXR.Streaming.Gui
 {
     [CustomEditor(typeof(BeamStreamingManager))]
     public class BeamStreamingManagerEditor : UnityEditor.Editor
-    {
-        private void OnEnable()
-        {
-            EditorApplication.update += Update;
-        }
-
-        private void OnDisable()
-        {
-            EditorApplication.update -= Update;
-        }
-
-        private void Update()
-        {
-            if (target == null)
-            {
-                return;
-            }
-
-            Repaint();
-        }
-
+    { 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
