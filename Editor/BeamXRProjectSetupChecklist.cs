@@ -2,6 +2,8 @@ using BeamXR.Streaming.Core;
 using System.Xml;
 #if USING_OCULUS_RUNTIME
 using Unity.XR.Oculus;
+using UnityEditor.XR.Management;
+using System.Linq;
 #endif
 using UnityEditor;
 using UnityEngine;
