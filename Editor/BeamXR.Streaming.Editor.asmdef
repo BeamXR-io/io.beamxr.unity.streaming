@@ -8,7 +8,7 @@
         "GUID:e40ba710768534012815d3193fa296cb",
         "GUID:f9fe0089ec81f4079af78eb2287a6163",
         "GUID:1fa272d591462e6458d1bfcc17595ab8",
-	"GUID:478a2357cc57436488a56e564b08d223"
+        "GUID:478a2357cc57436488a56e564b08d223"
     ],
     "includePlatforms": [
         "Editor"
@@ -19,6 +19,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.oculus",
+            "expression": "",
+            "define": "USING_OCULUS_RUNTIME"
+        }
+    ],
     "noEngineReferences": false
 }

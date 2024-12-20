@@ -1,4 +1,5 @@
 using BeamXR.Streaming.Core;
+using BeamXR.Streaming.Core.Media;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -7,83 +8,65 @@ namespace BeamXR.Streaming.Editor
 {
     public class PrefabAddStreamingPrefab : MonoBehaviour
     {
-        [MenuItem("BeamXR/Prefabs/Core/Add Streaming Prefab")]
+        [MenuItem("BeamXR/Prefabs/Core/Add Streaming Prefab", priority = 0)]
         private static void AddStreamingPrefab()
         {
-            // Search for the prefab by name.
-            string[] guids = AssetDatabase.FindAssets("BeamXR-Streaming");
-            if (guids.Length == 0)
-            {
-                Debug.LogError("BeamXR-Streaming prefab not found!");
-                return;
-            }
-
-            // Load the first matching asset.
-            string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-
-            BeamStreamingManager existingManager = GameObject.FindAnyObjectByType<BeamStreamingManager>();
-
-            // If there's no instance of the prefab in the scene, instantiate it.
-            if (existingManager == null)
-            {
-                GameObject newPrefab = Instantiate(prefab);
-                newPrefab.name = "BeamXR-Streaming";
-                existingManager = GameObject.FindObjectOfType<BeamStreamingManager>();
-                existingManager.GetComponent<BeamStreamingManager>()._targetResolution = Core.Media.StreamResolution.Resolution720p;
-            }
-            else
-            {
-                Debug.LogWarning("There is already an instance of the BeamStreamingManager in the scene.");
-            }
+            SpawnPrefab("BeamXR-Streaming", FindFirstObjectByType<BeamStreamingManager>(FindObjectsInactive.Include));
         }
 
-        [MenuItem("BeamXR/Prefabs/UI/Add Interaction Panel Prefab")]
+        [MenuItem("BeamXR/Prefabs/Core/Add Camera Controller", priority = 1)]
+        private static void AddCameraControllerPrefab()
+        {
+            SpawnPrefab("BeamXR Camera Controller", FindFirstObjectByType<BeamCameraController>(FindObjectsInactive.Include), GetParentObject().transform);
+        }
+
+        [MenuItem("BeamXR/Prefabs/UI/Add Interaction Panel Prefab", priority = 1)]
         private static void AddInteractionPanelPrefab()
         {
+            SpawnPrefab("BeamXR Interaction Panel", GameObject.Find("BeamXR Interaction Panel"));
+        }
+
+        public static GameObject GetParentObject()
+        {
+            GameObject go = GameObject.Find("BeamXR Objects");
+            if(go == null)
+            {
+                go = new GameObject("BeamXR Objects");
+            }
+            return go;
+        }
+
+        public static void SpawnPrefab(string prefabName, Object existing, Transform parent = null)
+        {
             // Search for the prefab by name.
-            string[] guids = AssetDatabase.FindAssets("BeamXR Interaction Panel");
+            string[] guids = AssetDatabase.FindAssets(prefabName);
             if (guids.Length == 0)
             {
-                Debug.LogError("BeamXR Interaction Panel prefab not found!");
+                Debug.LogError($"{prefabName} prefab not found!");
                 return;
             }
 
-            // If more than one asset is found, find the one that is exactly the right name.
-            if (guids.Length > 1)
-            {
-                // Filter the guid list to only include the one that is exactly the right name.
-                guids = guids.Where(guid => AssetDatabase.GUIDToAssetPath(guid).Contains("BeamXR Interaction Panel.prefab")).ToArray();
-            }
-
-            // Load the first matching asset.
-            string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-
-            // Check to see if there's already an instance of the prefab in the scene.
-            GameObject existingPrefab = GameObject.Find("BeamXR Interaction Panel");
-
             // If there's no instance of the prefab in the scene, instantiate it.
-            if (existingPrefab == null)
+            if (existing == null)
             {
-                GameObject newPrefab = Instantiate(prefab);
-                newPrefab.name = "BeamXR Interaction Panel";
-                existingPrefab = GameObject.Find("BeamXR Interaction Panel");
-                existingPrefab.transform.position = new Vector3(0, 1.2f, 0.5f);
+                // Load the first matching asset.
+                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+
+                Transform spawnParent = null;
+                if(parent != null)
+                {
+                    spawnParent = parent;
+                }
+                else if(Selection.activeGameObject != null && Selection.activeGameObject.scene != null)
+                {
+                    spawnParent = Selection.activeGameObject.transform;
+                }
+                PrefabUtility.InstantiatePrefab(prefab, spawnParent);
             }
             else
             {
-                Debug.LogWarning("There is already an instance of the BeamXR Interaction Panel prefab in the scene.");
-            }
-
-            // Get the beam streaming manager.
-            BeamStreamingManager beamStreamingManager = GameObject.FindAnyObjectByType<BeamStreamingManager>();
-
-            // If the beam streaming manager is found, set the interaction panel as the _deviceFlowInstructionsManager property (private serializefield).
-            if (beamStreamingManager != null)
-            {
-                var behaviour = existingPrefab.GetComponent<Gui.BeamInteractionPanel>();
-                beamStreamingManager._deviceFlowInstructionsManager.Manager = behaviour;
+                Debug.LogWarning($"There is already an instance of the {prefabName} in the scene.");
             }
         }
     }
