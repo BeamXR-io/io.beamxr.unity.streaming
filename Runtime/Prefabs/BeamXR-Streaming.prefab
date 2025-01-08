@@ -243,9 +243,10 @@ MonoBehaviour:
     Manager: {fileID: 0}
   _streamingCamera: {fileID: 7221765368305349838}
   _targetResolution: 0
-  _enableMicrophone: 0
-  _microphoneMuted: 0
-  _microphoneScalingFactor: 0.2
+  RecordGameAudio: 1
+  GameVolume: 1
+  RecordMicrophoneAudio: 1
+  MicrophoneVolume: 1
   _scaleAndroidResolutionDownBy: 2.25
   _androidMaxFramerate: 30
   _androidMaxBitrate: 5000000
