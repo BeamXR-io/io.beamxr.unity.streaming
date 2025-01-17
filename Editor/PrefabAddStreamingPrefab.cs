@@ -62,7 +62,8 @@ namespace BeamXR.Streaming.Editor
                 {
                     spawnParent = Selection.activeGameObject.transform;
                 }
-                PrefabUtility.InstantiatePrefab(prefab, spawnParent);
+                Object spawnedObject = PrefabUtility.InstantiatePrefab(prefab, spawnParent);
+                EditorGUIUtility.PingObject(spawnedObject);
             }
             else
             {
