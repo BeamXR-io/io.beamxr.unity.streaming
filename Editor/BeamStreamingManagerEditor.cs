@@ -43,6 +43,12 @@ namespace BeamXR.Streaming.Gui
                 if (beamManager.AuthState == AuthenticationState.Error)
                 {
                     ShowColouredBox("Error signing in", Color.red, Color.white);
+
+                    if (GUILayout.Button("Sign in"))
+                    {
+                        beamManager.Authenticate();
+                    }
+
                     return;
                 }
 
@@ -78,10 +84,12 @@ namespace BeamXR.Streaming.Gui
             else
             {
                 ShowColouredBox(beamManager.Me.email, Color.green, Color.red);
+                EditorGUI.BeginDisabledGroup(!(beamManager.StreamingState == StreamingState.Disconnected || beamManager.StreamingState == StreamingState.Error));
                 if (GUILayout.Button("Sign out"))
                 {
                     beamManager.SignOut();
                 }
+                EditorGUI.EndDisabledGroup();
             }
         }
 
