@@ -70,7 +70,7 @@ namespace BeamXR.Streaming.Gui
             HideNegativeButton();
             HideMessage();
             HideStatus();
-            _beamStreamingManager = FindObjectOfType<BeamStreamingManager>();
+            _beamStreamingManager = FindFirstObjectByType<BeamStreamingManager>(FindObjectsInactive.Include);
         }
 
         // Update is called once per frame

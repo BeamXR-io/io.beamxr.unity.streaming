@@ -1,0 +1,26 @@
+{
+    "name": "BeamXR.Streaming.Runtime.Audio",
+    "rootNamespace": "",
+    "references": [
+        "BeamXR.Streaming.Runtime",
+        "AK.Wwise.Unity.API",
+        "AK.Wwise.Unity.MonoBehaviour",
+        "FMODUnity"
+    ],
+    "includePlatforms": [
+        "Android",
+        "Editor",
+        "iOS",
+        "LinuxStandalone64",
+        "macOSStandalone",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
