@@ -1,23 +1,23 @@
 {
-    "name": "io.beamxr.unity.streaming",
-    "author": {
-        "name": "BeamXR",
-        "email": "support@beamxr.io"
-    },
-    "displayName": "BeamXR Streaming",
-    "version": "0.8.0",
-    "description": "The package provides Standalone VR applications with the ability to live stream via BeamXR services.",
-    "keywords": [
-        "oculus",
-        "vr",
-        "Standalone",
-        "Meta",
-        "Quest",
-        "Streaming",
-        "Twitch"
-    ],
-    "documentationUrl": "https://docs.beamxr.io/",
-    "dependencies": {
-        "com.unity.textmeshpro": "3.0.0"
-    }
+  "name": "io.beamxr.unity.streaming",
+  "author": {
+    "name": "BeamXR",
+    "email": "support@beamxr.io"
+  },
+  "displayName": "BeamXR Streaming",
+  "version": "0.8.1",
+  "description": "The package provides Standalone VR applications with the ability to live stream via BeamXR services.",
+  "keywords": [
+    "oculus",
+    "vr",
+    "Standalone",
+    "Meta",
+    "Quest",
+    "Streaming",
+    "Twitch"
+  ],
+  "documentationUrl": "https://docs.beamxr.io/",
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.0"
+  }
 }
