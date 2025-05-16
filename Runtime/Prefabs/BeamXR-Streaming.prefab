@@ -31,6 +31,7 @@ Transform:
   m_Children:
   - {fileID: 610576160740770465}
   - {fileID: 987831423937548908}
+  - {fileID: 8029397887749819998}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1762088863130646617
@@ -81,7 +82,9 @@ MonoBehaviour:
   _mainCamera: {fileID: 0}
   _unityEvents: {fileID: 6120182466154416489}
   _cameraMethod: 0
+  _blitMaterial: {fileID: 0}
   _inputRenderTexture: {fileID: 0}
+  _transformPriorities: []
   _transformToFollow: {fileID: 0}
   OnTransformToFollowChanged:
     m_PersistentCalls:
@@ -198,9 +201,12 @@ MonoBehaviour:
   _deviceFlowInstructionsManager:
     Manager: {fileID: 0}
   _streamingCamera: {fileID: 6010336146465053157}
-  _targetResolution: 1
+  _aspectRatio: 0
+  _cloudResolution: 0
+  _localResolution: 0
   GameVolume: 1
   RecordMicrophoneAudio: 1
+  _microphoneType: 0
   MicrophoneVolume: 1
   _streamDevices:
   - platform: 1
@@ -247,3 +253,53 @@ MonoBehaviour:
   OnStreamPlatformStateChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &4716923659051664373
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8029397887749819998}
+  - component: {fileID: 8615657524554068748}
+  m_Layer: 0
+  m_Name: Beam Microphone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8029397887749819998
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4716923659051664373}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3234198098620258032}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8615657524554068748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4716923659051664373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 570672377, guid: 9af1aae2ae34f9148a0e4534cd24bf72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Volume>k__BackingField: 1
+  _manualOutputSampleRate: 0
+  _outputSampleRate: 48000
+  _microphoneSampleRate: 48000
+  _micBufferSize: 8192
+  _lastSamples: 0

@@ -1,4 +1,6 @@
 using BeamXR.Streaming.Core;
+using BeamXR.Streaming.Core.Media;
+using BeamXR.Streaming.Core.Models;
 using BeamXR.Streaming.Core.Models.VFU;
 using BeamXR.Streaming.Core.SessionManagement;
 using System.Linq;
@@ -12,12 +14,17 @@ namespace BeamXR.Streaming.Editor
     {
         private SerializedProperty _streamDevices;
         private SerializedProperty _experienceKey, _experienceSecret;
+        private StreamAvailability _streamAvailability;
+
+        private Color _green = new Color(0.157f, 0.6f, 0.31f), _red = new Color(0.68f, 0.11f, 0.11f);
+        private Texture2D _grayBg, _greenBg, _yellowBg, _redBg;
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
             BeamStreamingManager beamManager = (BeamStreamingManager)target;
+            _streamAvailability = beamManager.StreamAvailability;
 
             FindParts();
 
@@ -36,9 +43,33 @@ namespace BeamXR.Streaming.Editor
 
         private void FindParts()
         {
+            BackgroundTextures();
             _streamDevices = serializedObject.FindProperty("_streamDevices");
             _experienceKey = serializedObject.FindProperty("_experienceKey");
             _experienceSecret = serializedObject.FindProperty("_experienceSecret");
+        }
+
+        private void BackgroundTextures()
+        {
+            if (_grayBg == null)
+            {
+                _grayBg = MakeTex(2, 2, Color.gray);
+            }
+
+            if (_greenBg == null)
+            {
+                _greenBg = MakeTex(2, 2, _green);
+            }
+
+            if (_yellowBg == null)
+            {
+                _yellowBg = MakeTex(2, 2, Color.yellow);
+            }
+
+            if (_redBg == null)
+            {
+                _redBg = MakeTex(2, 2, _red);
+            }
         }
 
         private void ShowDeviceOptions(BeamStreamingManager beamManager)
@@ -115,16 +146,25 @@ namespace BeamXR.Streaming.Editor
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         }
 
+        private void ShowAvailabilityBox(string name, bool value)
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            EditorGUILayout.LabelField(value ? EditorGUIUtility.IconContent("P4_CheckOutRemote@2x") : EditorGUIUtility.IconContent("P4_DeletedLocal@2x"));
+
+            EditorGUILayout.EndVertical();
+        }
+
         private void ShowUserState(BeamStreamingManager beamManager)
         {
             // Label for Streaming State
-            EditorGUILayout.LabelField("BeamXR user", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("BeamXR User", EditorStyles.boldLabel);
 
             if (beamManager.Me == null)
             {
                 if (beamManager.AuthState == AuthenticationState.Error)
                 {
-                    ShowColouredBox("Error signing in", Color.red, Color.white);
+                    ShowColouredBox("Error signing in", _redBg, Color.white);
 
                     if (GUILayout.Button("Sign in"))
                     {
@@ -136,11 +176,11 @@ namespace BeamXR.Streaming.Editor
 
                 if (beamManager.AuthState == AuthenticationState.Authenticating)
                 {
-                    ShowColouredBox("Signing in...", Color.yellow, Color.black);
+                    ShowColouredBox("Signing in...", _yellowBg, Color.black);
                 }
                 else
                 {
-                    ShowColouredBox("Not logged in", Color.red, Color.white);
+                    ShowColouredBox("Not logged in", _redBg, Color.white);
 
                     if (_experienceKey.stringValue == "" || _experienceSecret.stringValue == "")
                     {
@@ -159,9 +199,9 @@ namespace BeamXR.Streaming.Editor
                 {
                     EditorGUILayout.LabelField("Device flow code", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"Go to the following URL:");
-                    ShowColouredBox(beamManager.DeviceFlowCode.VerificationUrl, Color.green, Color.black);
+                    ShowColouredBox(beamManager.DeviceFlowCode.VerificationUrl, _greenBg, Color.white);
                     EditorGUILayout.LabelField($"Enter the following code:");
-                    ShowColouredBox(beamManager.DeviceFlowCode.UserCode, Color.green, Color.black);
+                    ShowColouredBox(beamManager.DeviceFlowCode.UserCode, _greenBg, Color.white);
 
                     if (GUILayout.Button("Open browser"))
                     {
@@ -172,7 +212,22 @@ namespace BeamXR.Streaming.Editor
             }
             else
             {
-                ShowColouredBox(beamManager.Me.email, Color.green, Color.red);
+                ShowColouredBox(beamManager.Me.email, _greenBg, Color.white);
+
+                if (_streamAvailability != null)
+                {
+                    EditorGUILayout.BeginHorizontal();
+
+                    ShowColouredBox(_streamAvailability.CanCloudStream ? $"Cloud Stream up to {_streamAvailability.CloudMaxResolution}" : "Unable to Cloud Stream", _streamAvailability.CanCloudStream ? _greenBg : _redBg, Color.white);
+                    ShowColouredBox(_streamAvailability.CanLocalStream ? $"Local Stream up to {(BeamResolution)System.Enum.GetValues(typeof(BeamResolution)).Cast<int>().Max()} " : "Unable to Cloud Stream", _streamAvailability.CanLocalStream ? _greenBg : _redBg, Color.white);
+
+                    EditorGUILayout.EndHorizontal();
+                    if (_streamAvailability.ErrorCode != 0)
+                    {
+                        ShowColouredBox($"Error: {_streamAvailability.ErrorCode} - {_streamAvailability.ErrorReason}", _redBg, Color.white);
+                    }
+                }
+
                 EditorGUI.BeginDisabledGroup(!(beamManager.StreamingState == StreamingState.Disconnected || beamManager.StreamingState == StreamingState.Error));
                 if (GUILayout.Button("Sign out"))
                 {
@@ -190,17 +245,17 @@ namespace BeamXR.Streaming.Editor
             }
 
             // Label for Streaming State
-            EditorGUILayout.LabelField("Available hosts", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Available Hosts", EditorStyles.boldLabel);
 
             if (beamManager.AvailableStreamingHosts == null || beamManager.AvailableStreamingHosts.Length == 0)
             {
-                ShowColouredBox("No streaming hosts available - will stream to cloud", Color.red, Color.white);
+                ShowColouredBox("No local stream apps - will stream to cloud", _grayBg, Color.black);
             }
             else
             {
                 foreach (var host in beamManager.AvailableStreamingHosts)
                 {
-                    ShowColouredBox(host.hostName, Color.gray, Color.black);
+                    ShowColouredBox(host.hostName, _grayBg, Color.black);
                 }
             }
         }
@@ -213,34 +268,38 @@ namespace BeamXR.Streaming.Editor
             }
 
             // Label for Streaming State
-            EditorGUILayout.LabelField("Streaming state", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Streaming State", EditorStyles.boldLabel);
+
+            // User/experience banned
+            if (_streamAvailability != null && !_streamAvailability.CanLocalStream && !_streamAvailability.CanCloudStream)
+                return;
 
             // Set the color based on the current status
-            Color statusColor;
+            Texture2D statusColor;
             Color statusTextColor;
             switch (beamManager.StreamingState)
             {
                 case StreamingState.Disconnected:
                     statusTextColor = Color.black;
-                    statusColor = Color.gray;
+                    statusColor = _grayBg;
                     break;
                 case StreamingState.CreatingSession:
                 case StreamingState.Disconnecting:
                 case StreamingState.Connecting:
                     statusTextColor = Color.black;
-                    statusColor = Color.yellow;
+                    statusColor = _yellowBg;
                     break;
                 case StreamingState.Error:
                     statusTextColor = Color.white;
-                    statusColor = Color.red;
+                    statusColor = _redBg;
                     break;
                 case StreamingState.Streaming:
                 case StreamingState.Connected:
-                    statusTextColor = Color.red;
-                    statusColor = Color.green;
+                    statusTextColor = Color.white;
+                    statusColor = _greenBg;
                     break;
                 default:
-                    statusColor = Color.white;
+                    statusColor = _grayBg;
                     statusTextColor = Color.black;
                     break;
             }
@@ -277,10 +336,16 @@ namespace BeamXR.Streaming.Editor
                     selection = newSelectionId;
                 }
 
-                if (GUILayout.Button("Start streaming"))
-                {
-                    var hostId = hostIds[selection];
+                var hostId = hostIds[selection];
+                bool showButton = true;
 
+                if(_streamAvailability == null || (hostId == "" && !_streamAvailability.CanCloudStream))
+                {
+                    showButton = false;
+                }
+
+                if (showButton && GUILayout.Button("Start streaming"))
+                {
                     if (hostId == "")
                     {
                         beamManager.StartStreamingToCloud();
@@ -317,8 +382,8 @@ namespace BeamXR.Streaming.Editor
 
                 ShowColouredBox(
                     beamManager.IsRecording ? "Recording" : "Not recording",
-                    beamManager.IsRecording ? Color.green : Color.grey,
-                    beamManager.IsRecording ? Color.red : Color.black);
+                    beamManager.IsRecording ? _greenBg : _grayBg,
+                    beamManager.IsRecording ? _red : Color.black);
 
                 if (beamManager.IsRecording)
                 {
@@ -354,7 +419,7 @@ namespace BeamXR.Streaming.Editor
                         {
                             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
                             EditorGUILayout.LabelField($"{service.GetVisualPlatformName()} ({(service.IsStreaming ? "Streaming" : "Offline")})");
-                            if(GUILayout.Button((service.IsStreaming ? "Stop" : "Start") + $" {service.GetVisualPlatformName()} Stream"))
+                            if (GUILayout.Button((service.IsStreaming ? "Stop" : "Start") + $" {service.GetVisualPlatformName()} Stream"))
                             {
                                 if (service.IsStreaming)
                                 {
@@ -390,11 +455,11 @@ namespace BeamXR.Streaming.Editor
             }
         }
 
-        private void ShowColouredBox(string text, Color backgroundColor = default, Color textColor = default)
+        private void ShowColouredBox(string text, Texture2D background = null, Color textColor = default)
         {
-            if (backgroundColor == default)
+            if (background == null)
             {
-                backgroundColor = Color.gray;
+                background = _grayBg;
             }
 
             if (textColor == default)
@@ -414,11 +479,11 @@ namespace BeamXR.Streaming.Editor
             // Draw the colored box
             GUIStyle boxStyle = new GUIStyle(GUI.skin.box)
             {
-                normal = { background = MakeTex(2, 2, backgroundColor) },
-                active = { background = MakeTex(2, 2, backgroundColor) },
-                hover = { background = MakeTex(2, 2, backgroundColor) },
+                normal = { background = background },
+                active = { background = background },
+                hover = { background = background },
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(10, 10, 5, 5)
+                padding = new RectOffset(4, 4, 4, 4)
             };
 
             // Group label and box together
