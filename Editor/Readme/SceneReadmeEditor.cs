@@ -84,7 +84,7 @@ namespace BeamXR.Streaming.Editor
 
             GUILayout.BeginHorizontal("In BigTitle");
             {
-                GUILayout.Label(readme.icon, ImageStyle, GUILayout.Width(iconWidth), GUILayout.Height(iconWidth));
+                GUILayout.Label(readme.icon, ImageStyle, GUILayout.Width(iconWidth), GUILayout.Height(readme.icon.height * (iconWidth / readme.icon.width) + 14));
 
                 GUILayout.BeginVertical();
                 {

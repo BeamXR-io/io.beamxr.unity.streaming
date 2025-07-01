@@ -1,8 +1,8 @@
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using BeamXR.Streaming.Core;
+using BeamXR.Streaming.Core.Settings;
 
 namespace BeamXR.Streaming.Editor
 {
@@ -24,6 +24,17 @@ namespace BeamXR.Streaming.Editor
                 PlayerSettings.graphicsJobs = false;
             }
 #endif
+            bool isDevelopmentBuild = (report.summary.options & BuildOptions.Development) != 0;
+
+            if (!isDevelopmentBuild)
+            {
+                var beamSettings = BeamSettingsProvider.GetSerializedSettings();
+                var devLogs = beamSettings.FindProperty("_developerLogs");
+                if (devLogs.boolValue)
+                {
+                    BeamLogger.LogWarning("Developer logs are not allowed during a release build and will be automatically disabled.");
+                }
+            }
         }
     }
 }

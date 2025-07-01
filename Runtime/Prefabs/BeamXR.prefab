@@ -1,0 +1,284 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &726987082960969131
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3234198098620258032}
+  - component: {fileID: 8992953265760286247}
+  - component: {fileID: 6034868823209136305}
+  m_Layer: 0
+  m_Name: BeamXR
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3234198098620258032
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726987082960969131}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 987831423937548908}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8992953265760286247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726987082960969131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1158107473, guid: 9af1aae2ae34f9148a0e4534cd24bf72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _beamSettings: {}
+  _authenticateOnAwake: 1
+  _credentialsManager:
+    Manager: {fileID: 0}
+  _deviceFlowInstructionsManager:
+    Manager: {fileID: 0}
+  _beamCamera: {fileID: 6010336146465053157}
+  _aspectRatio: 0
+  _cloudResolution: 0
+  _localResolution: 0
+  _photoResolution: 1
+  GameVolume: 1
+  RecordMicrophoneAudio: 1
+  MicrophoneVolume: 1
+--- !u!114 &6034868823209136305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726987082960969131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1462517454, guid: 9af1aae2ae34f9148a0e4534cd24bf72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _showTooltips: 1
+  OnStreamingStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _previousStreamingState: 0
+  OnStreamStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStreamEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSessionError:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRecordingStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRecordingEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRecordingStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _previousRecordingState: 0
+  OnPhotoCapturedResult:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPhotoCaptured:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCapturingStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCapturingEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAspectRatioChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnResolutionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAuthenticationChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStreamAvailabilityError:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStreamPlatformStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!1 &1762088863130646617
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 987831423937548908}
+  - component: {fileID: 6010336146465053157}
+  - component: {fileID: 5684811705885504252}
+  m_Layer: 0
+  m_Name: Beam Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &987831423937548908
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762088863130646617}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3234198098620258032}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6010336146465053157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762088863130646617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -982580279, guid: 9af1aae2ae34f9148a0e4534cd24bf72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _camera: {fileID: 5684811705885504252}
+  _mainCamera: {fileID: 0}
+  _cameraMethod: 0
+  _blitMaterial: {fileID: 0}
+  _inputRenderTexture: {fileID: 0}
+  _transformPriorities: []
+  _transformToFollow: {fileID: 0}
+  OnTransformToFollowChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _selfieTransform: {fileID: 0}
+  _automaticHiddenLayer: 1
+  _layersToHide:
+    serializedVersion: 2
+    m_Bits: 1073741824
+  _specificBeamLayer:
+    _layerIndex: -1
+  _addBeamLayerToMainCam: 1
+  OnRenderTextureChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _currentCameraSettings:
+    fieldOfView: 0
+    cameraView: 0
+    lookType: 0
+    smoothingAmount: 0
+    yAngle: 0
+    zDistance: 0
+    zLookDistance: 0
+    cameraHeight: 0
+    headHeight: 0
+  OnCameraSettingsChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _defaultCameraSettings:
+    fieldOfView: 60
+    cameraView: 0
+    lookType: 2
+    smoothingAmount: 4
+    yAngle: 180
+    zDistance: 1
+    zLookDistance: 0.5
+    cameraHeight: 0.1
+    headHeight: -0.1
+  _cameraPresets:
+  - fieldOfView: 70
+    cameraView: 2
+    lookType: 0
+    smoothingAmount: 2
+    yAngle: 180
+    zDistance: 1
+    zLookDistance: 0.5
+    cameraHeight: 0.2
+    headHeight: -0.1
+  - fieldOfView: 80
+    cameraView: 1
+    lookType: 2
+    smoothingAmount: 4
+    yAngle: 180
+    zDistance: 1
+    zLookDistance: 0.5
+    cameraHeight: 0.2
+    headHeight: -0.1
+--- !u!20 &5684811705885504252
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762088863130646617}
+  m_Enabled: 0
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.01
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: -20
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 0
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 1
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022

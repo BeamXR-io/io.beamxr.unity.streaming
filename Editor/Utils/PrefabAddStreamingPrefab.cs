@@ -1,6 +1,4 @@
 using BeamXR.Streaming.Core;
-using BeamXR.Streaming.Core.Media;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,32 +6,26 @@ namespace BeamXR.Streaming.Editor
 {
     public class PrefabAddStreamingPrefab : MonoBehaviour
     {
-        [MenuItem("BeamXR/Prefabs/Core/Add Streaming Prefab", priority = 0)]
+        [MenuItem("BeamXR/Prefabs/Core/Add BeamXR", priority = 0)]
         private static void AddStreamingPrefab()
         {
-            SpawnPrefab("BeamXR-Streaming", FindFirstObjectByType<BeamStreamingManager>(FindObjectsInactive.Include));
-        }
-
-        [MenuItem("BeamXR/Prefabs/UI/Add Interaction Panel Prefab", priority = 1)]
-        private static void AddInteractionPanelPrefab()
-        {
-            SpawnPrefab("BeamXR Interaction Panel", GameObject.Find("BeamXR Interaction Panel"));
+            SpawnPrefab("BeamXR", FindFirstObjectByType<BeamManager>(FindObjectsInactive.Include), specificType: typeof(BeamManager));
         }
 
         public static GameObject GetParentObject()
         {
             GameObject go = GameObject.Find("BeamXR Objects");
-            if(go == null)
+            if (go == null)
             {
                 go = new GameObject("BeamXR Objects");
             }
             return go;
         }
 
-        public static void SpawnPrefab(string prefabName, Object existing, Transform parent = null)
+        public static void SpawnPrefab(string prefabName, Object existing, Transform parent = null, System.Type specificType = null)
         {
             // Search for the prefab by name.
-            string[] guids = AssetDatabase.FindAssets(prefabName);
+            string[] guids = AssetDatabase.FindAssets("l:BeamXR a:packages " + prefabName);
             if (guids.Length == 0)
             {
                 Debug.LogError($"{prefabName} prefab not found!");
@@ -43,25 +35,30 @@ namespace BeamXR.Streaming.Editor
             // If there's no instance of the prefab in the scene, instantiate it.
             if (existing == null)
             {
-                // Load the first matching asset.
-                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-
-                Transform spawnParent = null;
-                if(parent != null)
+                for (int i = 0; i < guids.Length; i++)
                 {
-                    spawnParent = parent;
+                    string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                    GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    if (prefab != null && (specificType == null || prefab.GetComponentInChildren(specificType) != null))
+                    {
+                        Transform spawnParent = null;
+                        if (parent != null)
+                        {
+                            spawnParent = parent;
+                        }
+                        else if (Selection.activeGameObject != null && Selection.activeGameObject.scene != null && Selection.activeGameObject.scene.isLoaded && Selection.activeGameObject.scene.name != null)
+                        {
+                            spawnParent = Selection.activeGameObject.transform;
+                        }
+                        Object spawnedObject = PrefabUtility.InstantiatePrefab(prefab, spawnParent);
+                        EditorGUIUtility.PingObject(spawnedObject);
+                        break;
+                    }
                 }
-                else if(Selection.activeGameObject != null && Selection.activeGameObject.scene != null)
-                {
-                    spawnParent = Selection.activeGameObject.transform;
-                }
-                Object spawnedObject = PrefabUtility.InstantiatePrefab(prefab, spawnParent);
-                EditorGUIUtility.PingObject(spawnedObject);
             }
             else
             {
-                Debug.LogWarning($"There is already an instance of the {prefabName} in the scene.");
+                BeamLogger.LogWarning($"There is already an instance of the {prefabName} in the scene.", existing);
             }
         }
     }

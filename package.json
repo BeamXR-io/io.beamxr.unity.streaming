@@ -4,21 +4,28 @@
         "name": "BeamXR",
         "email": "support@beamxr.io"
     },
-    "displayName": "BeamXR Streaming",
-    "version": "0.8.2",
-    "description": "The package provides Standalone VR applications with the ability to live stream via BeamXR services.",
+    "displayName": "BeamXR",
+    "version": "1.0.0",
+    "description": "Unlock live streaming and recording in your XR experiences, from any camera angle.",
     "keywords": [
         "oculus",
         "vr",
+        "xr",
         "Standalone",
         "Meta",
         "Quest",
         "Streaming",
-        "Twitch"
+        "Twitch",
+        "YouTube",
+        "TikTok"
     ],
     "changelogUrl": "https://docs.beamxr.io/changelogs/streaming-changelog/",
     "documentationUrl": "https://docs.beamxr.io/",
-    "dependencies": {
-        "com.unity.textmeshpro": "3.0.0"
-    }
+    "samples": [
+        {
+            "displayName": "BeamXR 2D Example",
+            "description": "A quick start scene for navigating a basic streaming and recording experience.",
+            "path": "Examples~/2D Example"
+        }
+    ]
 }

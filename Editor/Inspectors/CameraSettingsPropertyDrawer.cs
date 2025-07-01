@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using BeamXR.Streaming.Core.Media;
 using UnityEditor;
 using UnityEngine;
@@ -33,7 +31,24 @@ namespace BeamXR.Streaming.Editor
             else
             {
                 property.isExpanded = true;
-                EditorGUI.LabelField(position, label, EditorStyles.boldLabel);
+
+                GUIContent link = new GUIContent("Camera Settings Guide", "View our docs to see what each of the camera settings do and suggested use-cases.");
+
+                Vector2 size = EditorStyles.linkLabel.CalcSize(link);
+
+                Rect linkRect = position;
+                linkRect.x = position.x + position.width - size.x;
+                linkRect.width = size.x;
+
+                Rect labelRect = position;
+                labelRect.width = position.width - size.x;
+
+                EditorGUI.LabelField(labelRect, label, EditorStyles.boldLabel);
+
+                if (EditorGUI.LinkButton(linkRect, link))
+                {
+                    Application.OpenURL("https://docs.beamxr.io/sdk-guides/core/camera-settings");
+                }
             }
 
 
@@ -56,7 +71,7 @@ namespace BeamXR.Streaming.Editor
                 DrawElement(ref position, _zDistance, _currentView == CameraView.ThirdPerson);
                 DrawElement(ref position, _zLookDistance, _currentLookType == CameraLookType.LookPosition);
                 DrawElement(ref position, _cameraHeight, _currentView == CameraView.ThirdPerson);
-                DrawElement(ref position, _headHeight, _currentLookType != CameraLookType.Direction);
+                DrawElement(ref position, _headHeight, _currentView != CameraView.FirstPerson && _currentLookType != CameraLookType.Direction);
             }
 
             EditorGUI.EndProperty();
@@ -76,13 +91,18 @@ namespace BeamXR.Streaming.Editor
 
             _currentView = (CameraView)_cameraView.intValue;
             _currentLookType = (CameraLookType)_lookType.intValue;
+
+            if (_currentView == CameraView.ThirdPerson && _currentLookType == CameraLookType.Inverted)
+            {
+                _lookType.intValue = (int)CameraLookType.Direction;
+            }
         }
 
         private void DrawElement(ref Rect position, SerializedProperty property, bool enabled = true)
         {
             bool oldEnabled = GUI.enabled;
 
-            if(!enabled)
+            if (!enabled)
             {
                 GUI.enabled = enabled;
             }
