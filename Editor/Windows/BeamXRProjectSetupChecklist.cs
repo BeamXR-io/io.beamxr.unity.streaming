@@ -20,8 +20,7 @@ namespace BeamXR.Streaming.Editor
 
         private static readonly string[] RequiredPermissions = {
         "android.permission.INTERNET",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.RECORD_VIDEO"
+        "android.permission.RECORD_AUDIO"
     };
 
         private static Texture2D icon;
@@ -120,31 +119,29 @@ namespace BeamXR.Streaming.Editor
 
             EditorGUILayout.BeginHorizontal();
 
-            // Iterate through the current scene and see if there's a BeamStreamingManager.
-            var beamStreamingManager = FindFirstObjectByType<BeamStreamingManager>(FindObjectsInactive.Include);
+            // Iterate through the current scene and see if there's a BeamManager.
+            var BeamManager = FindFirstObjectByType<BeamManager>(FindObjectsInactive.Include);
 
-            if (beamStreamingManager != null)
+            if (BeamManager != null)
             {
                 // Use reflection to get the _experienceKey and _experienceSecret fields.
-                var experienceKeyField = beamStreamingManager.GetType().GetField("_experienceKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var experienceSecretField = beamStreamingManager.GetType().GetField("_experienceSecret", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
+                
                 // Get the values of the fields.
-                var experienceKey = experienceKeyField.GetValue(beamStreamingManager) as string;
-                var experienceSecret = experienceSecretField.GetValue(beamStreamingManager) as string;
+                var experienceKey = BeamSettingsProvider.GetOrCreateSettings().ExperienceKey;
+                var experienceSecret = BeamSettingsProvider.GetOrCreateSettings().ExperienceSecret;
 
                 // Check that the Experience Key and Secret are set.
                 if (string.IsNullOrEmpty(experienceKey) || string.IsNullOrEmpty(experienceSecret))
                 {
                     GUILayout.Label(cross, invalidStyle);
 
-                    EditorGUILayout.HelpBox("Experience Key and Secret are not set. Please set them in the BeamStreamingManager component.", MessageType.Error);
+                    EditorGUILayout.HelpBox("Experience Key and Secret are not set. Please set them in the BeamManager component.", MessageType.Error);
 
                     if (GUILayout.Button("Fix", GUILayout.Width(50), GUILayout.Height(36)))
                     {
                         // Highlight the object.
-                        EditorGUIUtility.PingObject(beamStreamingManager);
-                        Selection.activeObject = beamStreamingManager;
+                        EditorGUIUtility.PingObject(BeamManager);
+                        Selection.activeObject = BeamManager;
                     }
                 }
                 else
@@ -312,7 +309,6 @@ namespace BeamXR.Streaming.Editor
               <uses-permission android:name=""com.oculus.permission.USE_ANCHOR_API"" />
               <uses-permission android:name=""com.oculus.permission.USE_SCENE"" />
               <uses-permission android:name=""android.permission.INTERNET"" />
-              <uses-permission android:name=""android.permission.RECORD_VIDEO"" />
               <uses-permission android:name=""android.permission.RECORD_AUDIO"" />
             </manifest>";
 

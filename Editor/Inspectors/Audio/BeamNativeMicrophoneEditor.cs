@@ -23,7 +23,7 @@ namespace BeamXR.Streaming.Editor.Audio
             EditorGUILayout.PropertyField(_microphoneSampleRate);
             EditorGUILayout.PropertyField(_micBufferSize);
 
-            if (Application.isPlaying && BeamStreamingManager.Instance.IsStreaming)
+            if (Application.isPlaying && BeamManager.Instance.IsStreaming)
             {
                 EditorGUI.BeginDisabledGroup(true);
 
